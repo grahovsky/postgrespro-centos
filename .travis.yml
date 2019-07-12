@@ -1,0 +1,15 @@
+sudo: required
+
+env:
+  global:
+    - DOCKER_VERSION=1.9.1  # Install Docker version 1.9.1
+
+services:
+  - docker
+
+script:
+  - docker build -t zokeber/postgresql:latest .
+  - docker create -it --name postgresql94 zokeber/postgresql:latest
+  - docker start postgresql94
+  - docker exec -it postgresql94 psql -U postgres -l
+  - docker stop postgresql94
