@@ -34,43 +34,52 @@ ENV PGDATA /var/lib/pgsql/$PG_VERSION/data
 
 # Install postgresql and run InitDB
 RUN rpm -ivh http://1c.postgrespro.ru/keys/postgrespro-1c-centos$PGVERSION.noarch.rpm && \
-    yum install postgresql$PGVERSION postgresql$PGVERSION-server && \
-    localedef  -i ru_RU -f UTF-8 ru_RU.UTF-8
+    yum install postgresql$PGVERSION postgresql$PGVERSION-server -y
+
+RUN localedef  -i ru_RU -f UTF-8 ru_RU.UTF-8
+
+COPY data/i18n /etc/sysconfig/
 
 # Initdb
 USER postgres
-RUN /usr/pgsql-$PG_VERSION/bin/initdb -D $PGHOME/data --locale=ru_RU.UTF-8
-
-USER root
-
-# Copy
-COPY data/i18n /etc/sysconfig/
-#COPY data/postgresql-setup /usr/pgsql-$PG_VERSION/bin/postgresql$PGVERSION-setup
-
-# Working directory
-WORKDIR $PGHOME
-
-# Copy config file
-#COPY data/postgresql.conf $PGHOME/$PG_VERSION/data/postgresql.conf
-#COPY data/pg_hba.conf $PGHOME/$PG_VERSION/data/pg_hba.conf
-#COPY data/postgresql.sh /usr/local/bin/postgresql.sh
-
-# Change own user
-#RUN chown -R postgres:postgres $PGHOME/$PG_VERSION/data/* && \
-#    usermod -G wheel postgres && \
-#    sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers && \
-#    chmod +x /usr/local/bin/postgresql.sh
+RUN /usr/pgsql-$PG_VERSION/bin/initdb -D $PGDATA --locale=ru_RU.UTF-8
 
 # Set volume
 VOLUME ["/var/lib/pgsql"]
+#RUN rm -rf $PGDATA
+
+#USER root
+
+# Copy
+#COPY data/postgresql-setup /usr/pgsql-$PG_VERSION/bin/postgresql$PGVERSION-setup
+
+# Working directory
+#WORKDIR $PGHOME
+
+# Copy config file
+#COPY data/postgresql.conf $PGDATA/postgresql.conf
+#COPY data/pg_hba.conf $PGDATA/pg_hba.conf
+#COPY data/postgresql.sh /usr/local/bin/postgresql.sh
+
+# Change own user
+#RUN chown -R postgres:postgres $PGDATA/* && \
+    #usermod -G wheel postgres && \
+    #sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers && \
+    #chmod +x /usr/local/bin/postgresql.sh
 
 # Expose ports.
 EXPOSE 5432
 
 # Set username
-USER postgres
+#USER postgres
 
 # Run PostgreSQL Server
-ENTRYPOINT ["/bin/bash", "/usr/local/bin/postgresql.sh"]
+WORKDIR $PGHOME
 
-ENTRYPOINT ["/bin/bash", "/usr/pgsql-$PG_SQL/bin/pg_ctl", "-D", "$PGHOME/data", "-l", "logfile", "start"]
+#ENTRYPOINT /usr/pgsql-9.6/bin/pg_ctl -D $PGDATA -l logfile start
+#/usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data -l logfile start
+#RUN /usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data -l logfile start 
+ENTRYPOINT ["/usr/pgsql-9.6/bin/postgres", "-D", "/var/lib/pgsql/9.6/data"]
+#ENTRYPOINT ["/bin/bash", "/usr/local/bin/postgresql.sh"]
+#ENTRYPOINT ["/bin/bash"]
+
