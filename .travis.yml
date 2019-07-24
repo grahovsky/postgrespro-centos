@@ -8,8 +8,8 @@ services:
   - docker
 
 script:
-  - docker build -t zokeber/postgresql:latest .
-  - docker create -it --name postgresql94 zokeber/postgresql:latest
-  - docker start postgresql94
-  - docker exec -it postgresql94 psql -U postgres -l
-  - docker stop postgresql94
+  - docker build -t grahovsky/postgrepro:latest .
+  - docker create -it --name postgrepro grahovsky/postgrepro:latest
+  - docker start postgrepro
+  - docker exec -it postgrepro psql -U postgres -l
+  - docker stop postgrepro

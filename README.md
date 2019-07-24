@@ -14,7 +14,7 @@ This repository contains a Dockerfile to build a Docker Image for Postgrespro on
 
 2. You can download automated build from public Docker Hub Registry:
 
-``` docker pull grahovsky/postgresql:latest ```
+``` docker pull grahovsky/postgrespro:latest ```
 
 
 **Another way: build from Github**
@@ -102,4 +102,4 @@ Stop the currently running image:
 
 Update the docker image:
 
-``` docker pull zokeber/postgrespro:latest ```
+``` docker pull grahovsky/postgrespro:latest ```

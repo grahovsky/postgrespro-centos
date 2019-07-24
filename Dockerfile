@@ -15,7 +15,7 @@
 # docker exec -it postgrespro psql
 #
 # Connect bash
-# docker exec -it postgrespro4 bash
+# docker exec -it postgrespro bash
 
 
 # Pull base image
@@ -25,51 +25,52 @@ FROM centos:centos7
 MAINTAINER Konstantin Grahovsky <grahovsky@gmail.com>
 
 # Postgresql version
-ENV PG_VERSION 11.4
-ENV PGVERSION 114
+ENV PG_VERSION 9.6
+ENV PGVERSION 96
 
 # Set the environment variables
-ENV HOME /var/lib/pgsql
-ENV PGDATA /var/lib/pgsql/11.4/data
+ENV PGHOME /var/lib/pgsql
+ENV PGDATA /var/lib/pgsql/$PG_VERSION/data
 
 # Install postgresql and run InitDB
-RUN rpm -vih http://repo.postgrespro.ru/pgpro-11/keys/postgrespro-std-11.centos.pro.yum-1.0-2.noarch.rpm && \
-    yum update -y && \
-    yum install -y sudo \
-    pwgen \
-    postgresql$PGVERSION \
-    postgresql$PGVERSION-server \
-    postgresql$PGVERSION-contrib && \
-    yum clean all
+RUN rpm -ivh http://1c.postgrespro.ru/keys/postgrespro-1c-centos$PGVERSION.noarch.rpm && \
+    yum install postgresql$PGVERSION postgresql$PGVERSION-server && \
+    localedef  -i ru_RU -f UTF-8 ru_RU.UTF-8
+
+# Initdb
+USER postgres
+RUN /usr/pgsql-$PG_VERSION/bin/initdb -D $PGHOME/data --locale=ru_RU.UTF-8
+
+USER root
 
 # Copy
-COPY data/postgresql-setup /usr/pgsql-$PG_VERSION/bin/postgresql$PGVERSION-setup
+COPY data/i18n /etc/sysconfig/
+#COPY data/postgresql-setup /usr/pgsql-$PG_VERSION/bin/postgresql$PGVERSION-setup
 
 # Working directory
-WORKDIR /var/lib/pgsql
-
-# Run initdb
-RUN /usr/pgsql-$PG_VERSION/bin/postgresql$PGVERSION-setup initdb
+WORKDIR $PGHOME
 
 # Copy config file
-COPY data/postgresql.conf /var/lib/pgsql/$PG_VERSION/data/postgresql.conf
-COPY data/pg_hba.conf /var/lib/pgsql/$PG_VERSION/data/pg_hba.conf
-COPY data/postgresql.sh /usr/local/bin/postgresql.sh
+#COPY data/postgresql.conf $PGHOME/$PG_VERSION/data/postgresql.conf
+#COPY data/pg_hba.conf $PGHOME/$PG_VERSION/data/pg_hba.conf
+#COPY data/postgresql.sh /usr/local/bin/postgresql.sh
 
 # Change own user
-RUN chown -R postgres:postgres /var/lib/pgsql/$PG_VERSION/data/* && \
-    usermod -G wheel postgres && \
-    sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers && \
-    chmod +x /usr/local/bin/postgresql.sh
+#RUN chown -R postgres:postgres $PGHOME/$PG_VERSION/data/* && \
+#    usermod -G wheel postgres && \
+#    sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers && \
+#    chmod +x /usr/local/bin/postgresql.sh
 
 # Set volume
 VOLUME ["/var/lib/pgsql"]
+
+# Expose ports.
+EXPOSE 5432
 
 # Set username
 USER postgres
 
 # Run PostgreSQL Server
-CMD ["/bin/bash", "/usr/local/bin/postgresql.sh"]
+ENTRYPOINT ["/bin/bash", "/usr/local/bin/postgresql.sh"]
 
-# Expose ports.
-EXPOSE 5432
+ENTRYPOINT ["/bin/bash", "/usr/pgsql-$PG_SQL/bin/pg_ctl", "-D", "$PGHOME/data", "-l", "logfile", "start"]
