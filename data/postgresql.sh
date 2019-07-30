@@ -36,9 +36,9 @@ create_dbuser() {
     # if the user is already created set authentication method to md5
     sudo -u $PG_USER bash -c "echo \"host    all             all             0.0.0.0/0               md5\" >> $PG_CONFDIR/pg_hba.conf"
   
-  else
+  #else
     # the user is not created set authentication method to trust
-    sudo -u $PG_USER bash -c "echo \"host    all             all             0.0.0.0/0               trust\" >> $PG_CONFDIR/pg_hba.conf"
+    #sudo -u $PG_USER bash -c "echo \"host    all             all             0.0.0.0/0               trust\" >> $PG_CONFDIR/pg_hba.conf"
   fi
 
   if [ -n "${DB_NAME}" ]; then
@@ -61,8 +61,20 @@ create_dbuser() {
 
 
 postgresql_server () {
-  
-  /usr/pgsql-$PG_VERSION/bin/postgres -D /var/lib/pgsql/$PG_VERSION/data -p $PG_PORT
+  echo "step. start job"
+  ls "$PGDATA"
+
+  mkdir -p "$PGDATA"
+	chown -R "$(id -u)" "$PGDATA" 2>/dev/null
+	chmod 700 "$PGDATA" 2>/dev/null
+
+  #rm -rf "$PGDATA" 2>/dev/null
+
+  echo "step. init db"
+  /usr/pgsql-$PG_VERSION/bin/initdb -D $PGDATA --locale=ru_RU.UTF-8
+
+  echo "step. start server"
+  /usr/pgsql-$PG_VERSION/bin/postgres -D $PGDATA -p $PG_PORT
 }
 
 ####

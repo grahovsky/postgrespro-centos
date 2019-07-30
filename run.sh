@@ -1,4 +1,5 @@
 #!/bin/bash
+docker rm -f postgrespro
 
 docker container run --name postgrespro \
     -dit \
