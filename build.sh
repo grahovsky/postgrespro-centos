@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build --tag grahovsky/postgrespro .
+docker build --tag grahovsky/postgrespro:latest .

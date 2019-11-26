@@ -21,6 +21,11 @@
 # Pull base image
 FROM centos:centos7
 
+ENV OKD_USER_ID 1001080000
+
+RUN groupadd -f --gid $OKD_USER_ID postgres && \
+    useradd --uid $OKD_USER_ID --gid $OKD_USER_ID --comment PostgreSQL --no-log-init --home-dir /var/lib/pgsql postgres
+
 # Maintener
 MAINTAINER Konstantin Grahovsky <grahovsky@gmail.com>
 
@@ -52,7 +57,7 @@ RUN /usr/pgsql-$PG_VERSION/bin/initdb -D $PGDATA --locale=ru_RU.UTF-8
 USER root
 
 # Set volume
-VOLUME ["/var/lib/pgsql/9.6/data"]
+VOLUME ["/var/lib/pgsql"]
 
 # Copy config file
 COPY data/postgresql.conf $PGDATA/postgresql.conf
