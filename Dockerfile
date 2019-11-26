@@ -42,11 +42,12 @@ RUN localedef  -i ru_RU -f UTF-8 ru_RU.UTF-8
 COPY data/i18n /etc/sysconfig/
 
 RUN chown -R postgres:postgres $PGHOME/* && \
-    usermod -G wheel postgres
+    usermod -G wheel postgres && \
+    chmod 700 -R "$PGHOME" 2>/dev/null    
 
 # Initdb
-#USER postgres
-#RUN /usr/pgsql-$PG_VERSION/bin/initdb -D $PGDATA --locale=ru_RU.UTF-8
+USER postgres
+RUN /usr/pgsql-$PG_VERSION/bin/initdb -D $PGDATA --locale=ru_RU.UTF-8
 
 USER root
 
@@ -54,8 +55,8 @@ USER root
 VOLUME ["/var/lib/pgsql/9.6/data"]
 
 # Copy config file
-#COPY data/postgresql.conf $PGDATA/postgresql.conf
-#COPY data/pg_hba.conf $PGDATA/pg_hba.conf
+COPY data/postgresql.conf $PGDATA/postgresql.conf
+COPY data/pg_hba.conf $PGDATA/pg_hba.conf
 COPY data/postgresql.sh /usr/local/bin/postgresql.sh
 
 RUN chown -R postgres:postgres $PGDATA && \
