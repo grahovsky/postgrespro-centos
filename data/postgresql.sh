@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Version
-PG_VERSION="9.6"
+PG_VERSION="10"
 
 #Settings
 DB_NAME=${DB_NAME:-}
@@ -9,10 +9,10 @@ DB_USER=${DB_USER:-}
 DB_PASS=${DB_PASS:-}
 
 PG_PORT=5432
-PG_CONFDIR="/var/lib/pgsql/$PG_VERSION/data"
-PG_CTL="/usr/pgsql-$PG_VERSION/bin/pg_ctl"
+PG_CONFDIR=$PGDATA
+PG_CTL=$PG_DIR/pg_ctl
 PG_USER="postgres"
-PSQL="/bin/psql"
+PSQL="/opt/pgpro/1c-10/bin/psql"
 
 create_dbuser() {
   ## Extract from https://github.com/CentOS/CentOS-Dockerfiles/blob/master/postgres/centos7/
@@ -71,10 +71,10 @@ postgresql_server () {
   #rm -rf "$PGDATA" 2>/dev/null
 
   echo "step. init db"
-  /usr/pgsql-$PG_VERSION/bin/initdb -D $PGDATA --locale=ru_RU.UTF-8
+  $PG_DIR/initdb -D $PGDATA --locale=ru_RU.UTF-8
 
   echo "step. start server"
-  /usr/pgsql-$PG_VERSION/bin/postgres -D $PGDATA -p $PG_PORT
+  $PG_DIR/postgres -D $PGDATA -p $PG_PORT
 }
 
 ####

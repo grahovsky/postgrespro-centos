@@ -30,16 +30,16 @@ RUN groupadd -f --gid $OKD_USER_ID postgres && \
 MAINTAINER Konstantin Grahovsky <grahovsky@gmail.com>
 
 # Postgresql version
-ENV PG_VERSION 9.6
-ENV PGVERSION 96
+ENV PG_VERSION 10
 
 # Set the environment variables
-ENV PGHOME /var/lib/pgsql
-ENV PGDATA /var/lib/pgsql/$PG_VERSION/data
+ENV PG_DIR=/opt/pgpro/1c-$PG_VERSION/bin
+ENV PGHOME /var/lib/pgpro
+ENV PGDATA $PGHOME/1c-$PG_VERSION/data
 
 # Install postgresql and run InitDB
-RUN rpm -ivh http://1c.postgrespro.ru/keys/postgrespro-1c-centos$PGVERSION.noarch.rpm && \
-    yum install postgresql$PGVERSION postgresql$PGVERSION-server -y \
+RUN yum-config-manager --add-repo "http://repo.postgrespro.ru/1c-archive/pg1c-10.10/centos/7/os/x86_64/rpms/"
+RUN yum install --nogpgcheck postgrespro-1c-10-server -y \
     yum install sudo -y
 
 RUN localedef  -i ru_RU -f UTF-8 ru_RU.UTF-8
@@ -52,12 +52,12 @@ RUN chown -R postgres:postgres $PGHOME/* && \
 
 # Initdb
 USER postgres
-RUN /usr/pgsql-$PG_VERSION/bin/initdb -D $PGDATA --locale=ru_RU.UTF-8
+RUN $PG_DIR/initdb -D $PGDATA --locale=ru_RU.UTF-8
 
 USER root
 
 # Set volume
-VOLUME ["/var/lib/pgsql"]
+VOLUME ["/var/lib/pgpro"]
 
 # Copy config file
 COPY data/postgresql.conf $PGDATA/postgresql.conf
