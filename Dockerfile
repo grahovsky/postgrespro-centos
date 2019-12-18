@@ -39,7 +39,8 @@ ENV PGDATA $PGHOME/1c-$PG_VERSION/data
 
 # Install postgresql and run InitDB
 RUN yum-config-manager --add-repo "http://repo.postgrespro.ru/1c-archive/pg1c-10.10/centos/7/os/x86_64/rpms/"
-RUN yum install --nogpgcheck postgrespro-1c-10-server -y \
+RUN yum install --nogpgcheck postgrespro-1c-10 postgrespro-1c-10-server postgrespro-1c-10-libs -y \
+    yum install --nogpgcheck postgrespro-1c-10-devel postgrespro-1c-10-contrib -y \
     yum install sudo -y
 
 RUN localedef  -i ru_RU -f UTF-8 ru_RU.UTF-8
