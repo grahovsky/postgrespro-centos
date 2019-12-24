@@ -21,10 +21,11 @@
 # Pull base image
 FROM centos:centos7
 
+# OKD
 ENV OKD_USER_ID 1001080000
 
 RUN groupadd -f --gid $OKD_USER_ID postgres && \
-    useradd --uid $OKD_USER_ID --gid $OKD_USER_ID --comment PostgreSQL --no-log-init --home-dir /var/lib/pgsql postgres
+    useradd --uid $OKD_USER_ID --gid $OKD_USER_ID --comment PostgreSQL --no-log-init --home-dir /var/lib/pgpro postgres
 
 # Maintener
 MAINTAINER Konstantin Grahovsky <grahovsky@gmail.com>
@@ -57,9 +58,6 @@ RUN $PG_DIR/initdb -D $PGDATA --locale=ru_RU.UTF-8
 
 USER root
 
-# Set volume
-VOLUME ["/var/lib/pgpro"]
-
 # Copy config file
 COPY data/postgresql.conf $PGDATA/postgresql.conf
 COPY data/pg_hba.conf $PGDATA/pg_hba.conf
@@ -70,11 +68,11 @@ RUN chown -R postgres:postgres $PGDATA && \
     sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers && \
     chmod +x /usr/local/bin/postgresql.sh
 
-# Change own user
-#RUN mkdir $PGDATA
-
 # Expose ports.
 EXPOSE 5432
+
+# Set volume
+VOLUME ["/var/lib/pgpro"]
 
 # Set username
 USER postgres
@@ -82,7 +80,5 @@ USER postgres
 # Working directory
 WORKDIR $PGHOME
 
-#ENTRYPOINT /usr/pgsql-9.6/bin/pg_ctl -D $PGDATA -l logfile start
-#ENTRYPOINT ["/usr/pgsql-9.6/bin/postgres", "-D", "/var/lib/pgsql/9.6/data"]
 ENTRYPOINT ["/bin/bash", "/usr/local/bin/postgresql.sh"]
 
