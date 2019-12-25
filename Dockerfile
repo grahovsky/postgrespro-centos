@@ -64,30 +64,21 @@ RUN rpm --import http://repo.postgrespro.ru/keys/GPG-KEY-POSTGRESPRO && \
 # set rootpass for debug
 RUN echo 'root' | passwd root --stdin
 
-
-# Initdb
-USER postgres
-RUN rm -rf $PGDATA/*
-RUN $PG_DIR/initdb -D $PGDATA --locale=ru_RU.UTF-8
-
 # Copy config file
-ADD data/postgresql.conf $PGDATA/
-ADD data/pg_hba.conf $PGDATA/
+ADD data/* /tmp/
+#RUN chmod +x /tmp/postgresql.sh
 
 # add permission
-USER root
 RUN chown -R postgres:postgres $PGHOME && \
     usermod -G wheel postgres && \
-    sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
+    sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers && \
+    rm -rf $PGDATA/*
 
 # Expose ports.
 EXPOSE 5432
 
 # Set volume
 VOLUME $PGHOME
-
-ADD data/postgresql.sh /tmp
-#RUN chmod +x /tmp/postgresql.sh
 
 # change user
 USER postgres
