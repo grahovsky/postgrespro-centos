@@ -1,84 +1,20 @@
 #!/bin/bash
+set -e
 
 #Version
-PG_VERSION="10"
+PG_VERSION=${PG_VERSION:=10}
 
-#Settings
-DB_NAME=${DB_NAME:-}
-DB_USER=${DB_USER:-}
-DB_PASS=${DB_PASS:-}
-
-PG_PORT=5432
-PG_CONFDIR=$PGDATA
-PG_CTL=$PG_DIR/pg_ctl
-PG_USER="postgres"
-PSQL="/opt/pgpro/1c-10/bin/psql"
-
-create_dbuser() {
-  ## Extract from https://github.com/CentOS/CentOS-Dockerfiles/blob/master/postgres/centos7/
-  ## and modified by me
-  ##
-  ## Check to see if we have pre-defined credentials to use
-  if [ -n "${DB_USER}" ]; then
-    
-    # run postgresql server
-    cd /var/lib/pgsql && sudo -u $PG_USER bash -c "$PG_CTL -D $PG_CONFDIR -o \"-c listen_addresses='*'\" -w start"
-    # generate password
-    if [ -z "${DB_PASS}" ]; then
-      echo "WARNING: "
-      echo "No password specified for \"${DB_USER}\". Generating one"
-      DB_PASS=$(pwgen -c -n -1 12)
-      echo "Password for \"${DB_USER}\" created as: \"${DB_PASS}\""
-    fi
-    # create user
-    echo "Creating user \"${DB_USER}\"..."
-    $PSQL -U $PG_USER -c "CREATE ROLE ${DB_USER} with CREATEROLE login superuser PASSWORD '${DB_PASS}';"
-    # if the user is already created set authentication method to md5
-    sudo -u $PG_USER bash -c "echo \"host    all             all             0.0.0.0/0               md5\" >> $PG_CONFDIR/pg_hba.conf"
-  
-  #else
-    # the user is not created set authentication method to trust
-    #sudo -u $PG_USER bash -c "echo \"host    all             all             0.0.0.0/0               trust\" >> $PG_CONFDIR/pg_hba.conf"
-  fi
-
-  if [ -n "${DB_NAME}" ]; then
-
-    # create database
-    echo "Creating database \"${DB_NAME}\"..."
-    echo "CREATE DATABASE ${DB_NAME};"
-    $PSQL -U $PG_USER -c "CREATE DATABASE ${DB_NAME}"
-    # grant permission
-    if [ -n "${DB_USER}" ]; then
-      echo "Granting access to database \"${DB_NAME}\" for user \"${DB_USER}\"..."
-      $PSQL -U $PG_USER -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} to ${DB_USER};"
-    fi
-
-    # stop postgresql server
-    sudo -u $PG_USER bash -c "$PG_CTL -D $PG_CONFDIR -m fast -w stop"   
-  
-  fi
-}
-
+PG_DIR=${PG_DIR:=/opt/pgpro/1c-$PG_VERSION/bin}
+PGHOME=${PGHOME:=/var/lib/pgpro}
+PGDATA=${PGDATA:=$PGHOME/1c-$PG_VERSION/data}
+PG_PORT=${PG_PORT:=5432}
 
 postgresql_server () {
-  echo "step. start job"
-  ls "$PGDATA"
-
-  mkdir -p "$PGDATA"
-	chown -R "$(id -u)" "$PGDATA" 2>/dev/null
-	chmod 700 "$PGDATA" 2>/dev/null
-
-  #rm -rf "$PGDATA" 2>/dev/null
-
-  echo "step. init db"
-  $PG_DIR/initdb -D $PGDATA --locale=ru_RU.UTF-8
-
   echo "step. start server"
   $PG_DIR/postgres -D $PGDATA -p $PG_PORT
 }
 
 ####
 ####
-create_dbuser
 echo "Starting PostgreSQL $PG_VERSION server..."
 postgresql_server

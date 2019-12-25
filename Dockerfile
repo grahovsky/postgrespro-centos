@@ -60,20 +60,26 @@ RUN rpm --import http://repo.postgrespro.ru/keys/GPG-KEY-POSTGRESPRO && \
         sudo && \
     yum clean all
 
+
+# set rootpass for debug
+RUN echo 'root' | passwd root --stdin
+
+
+# Initdb
+USER postgres
+RUN rm -rf $PGDATA/*
+RUN $PG_DIR/initdb -D $PGDATA --locale=ru_RU.UTF-8
+
 # Copy config file
 ADD data/postgresql.conf $PGDATA/
 ADD data/pg_hba.conf $PGDATA/
 
-# Initdb
-# USER postgres
-# RUN $PG_DIR/initdb -D $PGDATA --locale=ru_RU.UTF-8
-# USER root
-
 # add permission
+USER root
 RUN chown -R postgres:postgres $PGHOME && \
     usermod -G wheel postgres && \
     sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
-    
+
 # Expose ports.
 EXPOSE 5432
 
