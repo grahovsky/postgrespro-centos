@@ -2,7 +2,7 @@
 set -e
 
 #Version
-PG_VERSION=${PG_VERSION:=10}
+PG_VERSION=${PG_VERSION:=12}
 
 PG_DIR=${PG_DIR:=/opt/pgpro/1c-$PG_VERSION/bin}
 PGHOME=${PGHOME:=/var/lib/pgpro}
